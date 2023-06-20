@@ -43,13 +43,17 @@ export default class MyPlugin extends Plugin {
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: "set-file-title-auto",
-			name: "Automatically Set File Title",
-			callback: () => {
-				// set current filename to 'foobar.md'
-				this.app.workspace!.getActiveFile().then((file) => {
-					file.rename("foobar.md");
-				});
+			id: "set-filename",
+			name: "Give me a filename!",
+			callback: async () => {
+				// check if there's a currently open file
+				const file = this.app.workspace.getActiveFile();
+				if (!file) {
+					new Notice("No active file");
+					return;
+				}
+				const newPath = `${file.parent!.path}/foobar.md`;
+				await this.app.fileManager.renameFile(file, newPath);
 			},
 		});
 		// This adds an editor command that can perform some operation on the current editor instance
