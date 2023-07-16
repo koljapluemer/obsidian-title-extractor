@@ -73,14 +73,18 @@ export default class MyPlugin extends Plugin {
 								!word.includes("www")
  						)
 						.slice(0, 100)
-						.join(" ");
+						
 
 					let fileName = '';
 					// add words to filename until 100 chars are exceeded
-					while (fileName.length < 100) {
-						fileName += words;
+					let index = 0;
+					while (fileName.length < 100 && index <= words.length - 1) {
 						fileName += '_';
+						fileName += words[index]
+						index += 1
 					}
+					// remove first char from fileName
+					fileName = fileName.slice(1, fileName.length)
 
 					console.log('FILENAME:', fileName);
 					const newPath = `${file.parent!.path}/foobar.md`;
