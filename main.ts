@@ -109,7 +109,6 @@ export default class MyPlugin extends Plugin {
 					}
 					if (this.settings.onlyFirstLine) {
 						cleanContent = returnFirstLine(cleanContent);
-						
 					}
 
 					if (this.settings.stripMarkdown) {
