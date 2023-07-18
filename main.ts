@@ -25,22 +25,6 @@ export default class MyPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon(
-			"dice",
-			"Sample Plugin",
-			(evt: MouseEvent) => {
-				// Called when the user clicks the icon.
-				new Notice("This is a notice!");
-			}
-		);
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass("my-plugin-ribbon-class");
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText("Status Bar Text");
-
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
 			id: "set-filename",
@@ -53,33 +37,40 @@ export default class MyPlugin extends Plugin {
 					return;
 				}
 
-				this.app.vault.read(file).then((content) => {
+				this.app.vault.read(file).then( async (content) => {
+					// remove frontmatter
+					const parts = content.split("---")
+					let contentClean = parts.join(' ')
+					if (parts.length > 2) {
+						contentClean = parts.slice(2).join(' ')
+					}
+
 					// get the content of the file, split by words, remove urls and words containting {, }, [, ], (, ) and #
 					// get so many words that 100 chars are not exceeded
-					const words = content
-						.split(" ")
+					const words = contentClean
+						.split(/[\s,]+/)
 						.filter(
 							(word) =>
-								!word.includes("{") &&
-								!word.includes("}") &&
-								!word.includes("[") &&
-								!word.includes("]") &&
-								!word.includes("(") &&
-								!word.includes(")") &&
-								!word.includes("#") &&
+						// 		!word.includes("{") &&
+						// 		!word.includes("}") &&
+								// !word.includes("(") &&
+								// !word.includes(")") &&
+						// 		!word.includes("#") &&
 								!word.includes("http") &&
 								!word.includes("---") &&
-								!word.includes(":") &&
+								// !word.includes(":") &&
+								// !word.includes(">") &&
+								// !word.includes("<") &&
+								word[0] != '#' &&
 								!word.includes("www")
- 						)
+						)
 						.slice(0, 100)
 						
-
 					let fileName = '';
 					// add words to filename until 100 chars are exceeded
 					let index = 0;
 					while (fileName.length < 100 && index <= words.length - 1) {
-						fileName += '_';
+						fileName += ' ';
 						fileName += words[index]
 						index += 1
 					}
@@ -87,7 +78,7 @@ export default class MyPlugin extends Plugin {
 					fileName = fileName.slice(1, fileName.length)
 
 					console.log('FILENAME:', fileName);
-					const newPath = `${file.parent!.path}/foobar.md`;
+					const newPath = `${file.parent!.path}/${fileName}.md`;
 					// await this.app.fileManager.renameFile(file, newPath);
 				});
 			},
