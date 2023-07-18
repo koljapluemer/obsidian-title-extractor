@@ -44,7 +44,7 @@ export default class MyPlugin extends Plugin {
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
 			id: "set-filename",
-			name: "Give me a filename!",
+			name: "Extract Title and Filename From Note Content",
 			callback: async () => {
 				// check if there's a currently open file
 				const file = this.app.workspace.getActiveFile();
@@ -102,39 +102,41 @@ export default class MyPlugin extends Plugin {
 					// go through each settings and call the corresponding function if true
 					// always clear /\:
 					let cleanContent = content.replace(/\/|\\/g, "");
-					console.log("-- Initial Content:\n", cleanContent);
 
 					if (this.settings.ignoreFrontmatter) {
 						cleanContent = removeFrontmatter(cleanContent);
-						console.log("-- after removing frontmatter:\n", cleanContent);
+					
 					}
 					if (this.settings.onlyFirstLine) {
 						cleanContent = returnFirstLine(cleanContent);
-						console.log("-- after only first line:\n", cleanContent);
+						
 					}
-				
+
 					if (this.settings.stripMarkdown) {
 						cleanContent = removeMd(cleanContent);
-						console.log("-- after removing markdown:\n", cleanContent);
+						
 					}
 					if (this.settings.replacePeriods) {
 						cleanContent = replacePeriods(cleanContent);
-						console.log("-- after replacing periods:\n", cleanContent);
+						
 					}
 					if (this.settings.replaceSpaces) {
 						cleanContent = replaceSpaces(cleanContent);
-						console.log("-- after replacing spaces:\n", cleanContent);
+						
 					}
 					if (this.settings.stripSpecialChars) {
 						cleanContent = stripSpecialChars(cleanContent);
-						console.log("-- after stripping special chars:\n", cleanContent);
+						
 					}
 					if (this.settings.stripNonAlphaNumChars) {
 						cleanContent = stripNonAlphaNumChars(cleanContent);
-						console.log("-- after stripping non-alphanum chars:\n", cleanContent);
+					
 					}
 
-					function capStringWithCharacters(str: string, maxLength: number) {
+					function capStringWithCharacters(
+						str: string,
+						maxLength: number
+					) {
 						if (str.length <= maxLength) {
 							return str;
 						} else {
@@ -164,16 +166,32 @@ export default class MyPlugin extends Plugin {
 						}
 					}
 
-					console.log("CLEAN CONTENT:", cleanContent);
 
-					const fileName = capStringWithCharacters(
+					cleanContent = capStringWithCharacters(
 						cleanContent,
 						this.settings.maxNrOfWords
 					);
+					// if last character is a special character (' ', '.', '_', '-') remove it
+					const lastCharacter = cleanContent.charAt(
+						cleanContent.length - 1
+					);
+					const charactersToCheck = ["_", "-", " ", "."];
+					if (charactersToCheck.includes(lastCharacter)) {
+						cleanContent = cleanContent.slice(0, -1);
+					}
 
-					console.log("FILENAME:", fileName);
+					
+					const fileName = cleanContent;
+
 					const newPath = `${file.parent!.path}/${fileName}.md`;
-					await this.app.fileManager.renameFile(file, newPath);
+					try {
+						await this.app.fileManager.renameFile(file, newPath);
+					} catch (error) {
+						console.error("FILE NAMING ERROR:", error);
+						new Notice(
+							"Error renaming file, check console for details."
+						);
+					}
 				});
 			},
 		});
@@ -248,8 +266,6 @@ class SampleSettingTab extends PluginSettingTab {
 					})
 			);
 
-	
-
 		// bool: strip markdown
 		new Setting(containerEl).setName("Strip markdown").addToggle((toggle) =>
 			toggle
@@ -285,7 +301,9 @@ class SampleSettingTab extends PluginSettingTab {
 		// bool: strip special chars
 		new Setting(containerEl)
 
-			.setName("Strip all characters that are not letters, _ or -")
+			.setName(
+				"Strip all characters that are not letters, dashes or underscores"
+			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.stripSpecialChars)
@@ -297,7 +315,9 @@ class SampleSettingTab extends PluginSettingTab {
 
 		// bool: strip nonalphanumeric chars
 		new Setting(containerEl)
-			.setName("Strip all characters that are not English letters, _ or -")
+			.setName(
+				"Strip all characters that are not English letters, dashes or underscores"
+			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.stripNonAlphaNumChars)
