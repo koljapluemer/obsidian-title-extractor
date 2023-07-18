@@ -43,11 +43,14 @@ export default class MyPlugin extends Plugin {
 				this.app.vault.read(file).then( async (content) => {
 
 					function removeFrontmatter(markdown) {
-						const frontmatterStart = markdown.indexOf('---');
-						if (frontmatterStart !== -1) {
-						  const frontmatterEnd = markdown.indexOf('---', frontmatterStart + 3);
-						  if (frontmatterEnd !== -1) {
-							return markdown.slice(frontmatterEnd + 3).trimStart();
+						const lines = markdown.trim().split('\n');
+						if (lines[0] === '---') {
+						  let frontmatterEndIndex = lines.findIndex((line, index) => index > 0 && line === '---');
+						  if (frontmatterEndIndex !== -1) {
+							const frontmatterLines = lines.slice(0, frontmatterEndIndex + 1);
+							if (frontmatterLines.length >= 2) {
+							  return lines.slice(frontmatterEndIndex + 1).join('\n').trimStart();
+							}
 						  }
 						}
 						return markdown;
