@@ -90,19 +90,18 @@ export default class MyPlugin extends Plugin {
 					}
 
 					function stripSpecialChars(markdown: string) {
-						// remove everything that isnt alphanumeric, whitespace, _ - or .
-						// not only english, but international chars are allowed
-						return markdown.replace(/[^\w\s\-\.\_]/g, "");
+						const specialCharsRegex = /[^\p{L}\p{N}_\-?]/gu;
+						return markdown.replace(specialCharsRegex, "");
 					}
 
 					function stripNonAlphaNumChars(markdown: string) {
-						// remove everything that isnt aZ09
-						return markdown.replace(/[^a-zA-Z0-9]/g, "");
+						// remove everything that isnt aZ09_-
+						return markdown.replace(/[^a-zA-Z0-9_\-?]/g, "");
 					}
 
 					// go through each settings and call the corresponding function if true
-
-					let cleanContent = content;
+					// always clear /\:
+					let cleanContent = content.replace(/\/|\\/g, "");
 					console.log("-- Initial Content:\n", cleanContent);
 
 					if (this.settings.ignoreFrontmatter) {
@@ -286,7 +285,7 @@ class SampleSettingTab extends PluginSettingTab {
 		// bool: strip special chars
 		new Setting(containerEl)
 
-			.setName("Strip special chars")
+			.setName("Strip all characters that are not letters, _ or -")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.stripSpecialChars)
@@ -298,7 +297,7 @@ class SampleSettingTab extends PluginSettingTab {
 
 		// bool: strip nonalphanumeric chars
 		new Setting(containerEl)
-			.setName("Strip nonalphanumeric chars")
+			.setName("Strip all characters that are not English letters, _ or -")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.stripNonAlphaNumChars)
