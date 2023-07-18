@@ -174,7 +174,7 @@ export default class MyPlugin extends Plugin {
 					const lastCharacter = cleanContent.charAt(
 						cleanContent.length - 1
 					);
-					const charactersToCheck = ["_", "-", " ", "."];
+					const charactersToCheck = ["_", "-", " ", ".", ","];
 					if (charactersToCheck.includes(lastCharacter)) {
 						cleanContent = cleanContent.slice(0, -1);
 					}
@@ -228,6 +228,7 @@ class SampleSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl("h2", { text: "Title Extractor Settings" });
+		containerEl.createEl("h3", { text: "Style" });
 
 		new Setting(containerEl)
 			.setName("Maximum length of the title")
@@ -275,6 +276,8 @@ class SampleSettingTab extends PluginSettingTab {
 				})
 		);
 
+		containerEl.createEl("h3", { text: "Compability" });
+
 		// bool: strip periods
 		new Setting(containerEl).setName("Strip periods").addToggle((toggle) =>
 			toggle
@@ -284,6 +287,7 @@ class SampleSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 		);
+
 
 		// bool: replace spaces
 		new Setting(containerEl)
