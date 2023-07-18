@@ -9,18 +9,30 @@ import {
 	Setting,
 } from "obsidian";
 
-const removeMd = require('remove-markdown');
-
+const removeMd = require("remove-markdown");
 
 // Remember to rename these classes and interfaces!
 
 interface MyPluginSettings {
-	mySetting: string;
+	onlyFirstLine: boolean;
+	maxNrOfWords: number;
+	ignoreFrontmatter: boolean;
+	stripMarkdown: boolean;
+	stripPeriods: boolean;
+	replaceSpaces: boolean;
+	stripSpecialChars: boolean;
+	stripNonAlphaNumChars: boolean;
 }
 
 const DEFAULT_SETTINGS: MyPluginSettings = {
-	// mySetting: "default",
-	maxNrOfWords: '10',
+	maxNrOfWords: 10,
+	onlyFirstLine: true,
+	ignoreFrontmatter: true,
+	stripMarkdown: true,
+	stripPeriods: false,
+	replaceSpaces: false,
+	stripSpecialChars: false,
+	stripNonAlphaNumChars: false,
 };
 
 export default class MyPlugin extends Plugin {
@@ -41,50 +53,55 @@ export default class MyPlugin extends Plugin {
 					return;
 				}
 
-				this.app.vault.read(file).then( async (content) => {
-
+				this.app.vault.read(file).then(async (content) => {
 					function removeFrontmatter(markdown) {
-						const lines = markdown.trim().split('\n');
-						if (lines[0] === '---') {
-						  let frontmatterEndIndex = lines.findIndex((line, index) => index > 0 && line === '---');
-						  if (frontmatterEndIndex !== -1) {
-							const frontmatterLines = lines.slice(0, frontmatterEndIndex + 1);
-							if (frontmatterLines.length >= 2) {
-							  return lines.slice(frontmatterEndIndex + 1).join('\n').trimStart();
+						const lines = markdown.trim().split("\n");
+						if (lines[0] === "---") {
+							let frontmatterEndIndex = lines.findIndex(
+								(line, index) => index > 0 && line === "---"
+							);
+							if (frontmatterEndIndex !== -1) {
+								const frontmatterLines = lines.slice(
+									0,
+									frontmatterEndIndex + 1
+								);
+								if (frontmatterLines.length >= 2) {
+									return lines
+										.slice(frontmatterEndIndex + 1)
+										.join("\n")
+										.trimStart();
+								}
 							}
-						  }
 						}
 						return markdown;
-					  }
-					
-					const words = removeMd(removeFrontmatter(content))
+					}
 
-					console.log('WORDS', words);
+					const words = removeMd(removeFrontmatter(content));
 
-					console.log('FIRST LINE', words.split(/\r?\n/)[0]);
-						
-					let fileName = '';
+					console.log("WORDS", words);
+
+					console.log("FIRST LINE", words.split(/\r?\n/)[0]);
+
+					let fileName = "";
 					// add words to filename until 100 chars are exceeded
 					let index = 0;
 					while (fileName.length < 100 && index <= words.length - 1) {
-						fileName += ' ';
-						fileName += words[index]
-						index += 1
+						fileName += " ";
+						fileName += words[index];
+						index += 1;
 					}
 					// remove first char from fileName
-					fileName = fileName.slice(1, fileName.length)
+					fileName = fileName.slice(1, fileName.length);
 
-					console.log('FILENAME:', fileName);
+					console.log("FILENAME:", fileName);
 					const newPath = `${file.parent!.path}/${fileName}.md`;
 					// await this.app.fileManager.renameFile(file, newPath);
 				});
 			},
 		});
 
-
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
-
 	}
 
 	onunload() {}
@@ -102,7 +119,6 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-
 class SampleSettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
 
@@ -116,33 +132,97 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Settings for my awesome plugin." });
-
-		// new Setting(containerEl)
-		// 	.setName("Setting #1")
-		// 	.setDesc("It's a secret")
-		// 	.addText((text) =>
-		// 		text
-		// 			.setPlaceholder("Enter your secret")
-		// 			.setValue(this.plugin.settings.mySetting)
-		// 			.onChange(async (value) => {
-		// 				console.log("Secret: " + value);
-		// 				this.plugin.settings.mySetting = value;
-		// 				await this.plugin.saveSettings();
-		// 			})
-		// 	);
+		containerEl.createEl("h2", { text: "Title Extractor Settings" });
 
 		new Setting(containerEl)
 			.setName("Maximum number of words in the title")
-			.addText((text) =>
-				text
-					.setPlaceholder("10")
-					.setValue(this.plugin.settings.maxNrOfWords)
+			.addText((number) =>
+				number
+					.setPlaceholder('10')
+					.setValue(this.plugin.settings.maxNrOfWords.toString())
 					.onChange(async (value) => {
-						this.plugin.settings.maxNrOfWords = value;
+						this.plugin.settings.maxNrOfWords = parseInt(value);
 						await this.plugin.saveSettings();
-					}
-						)
+					})
+			);
+
+		// bool: consider only first line
+		new Setting(containerEl)
+			.setName("Consider only first line")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.onlyFirstLine)
+					.onChange(async (value) => {
+						this.plugin.settings.onlyFirstLine = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		// bool: ignore frontmatter
+		new Setting(containerEl)
+			.setName("Ignore frontmatter")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.ignoreFrontmatter)
+					.onChange(async (value) => {
+						this.plugin.settings.ignoreFrontmatter = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		// bool: strip markdown
+		new Setting(containerEl).setName("Strip markdown").addToggle((toggle) =>
+			toggle
+				.setValue(this.plugin.settings.stripMarkdown)
+				.onChange(async (value) => {
+					this.plugin.settings.stripMarkdown = value;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		// bool: strip periods
+		new Setting(containerEl).setName("Strip periods").addToggle((toggle) =>
+			toggle
+				.setValue(this.plugin.settings.stripPeriods)
+				.onChange(async (value) => {
+					this.plugin.settings.stripPeriods = value;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		// bool: replace spaces
+		new Setting(containerEl).setName("Replace spaces").addToggle((toggle) =>
+			toggle
+				.setValue(this.plugin.settings.replaceSpaces)
+				.onChange(async (value) => {
+					this.plugin.settings.replaceSpaces = value;
+					await this.plugin.saveSettings();
+				})
+		);
+
+		// bool: strip special chars
+		new Setting(containerEl)
+
+			.setName("Strip special chars")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.stripSpecialChars)
+					.onChange(async (value) => {
+						this.plugin.settings.stripSpecialChars = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		// bool: strip nonalphanumeric chars
+		new Setting(containerEl)
+			.setName("Strip nonalphanumeric chars")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.stripNonAlphaNumChars)
+					.onChange(async (value) => {
+						this.plugin.settings.stripNonAlphaNumChars = value;
+						await this.plugin.saveSettings();
+					})
 			);
 	}
 }
