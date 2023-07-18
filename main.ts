@@ -82,7 +82,7 @@ export default class MyPlugin extends Plugin {
 					}
 
 					function replacePeriods(markdown: string) {
-						return markdown.replace(/\./g, "-");
+						return markdown.replace('.', '_');
 					}
 
 					function replaceSpaces(markdown: string) {
@@ -100,8 +100,8 @@ export default class MyPlugin extends Plugin {
 					}
 
 					// go through each settings and call the corresponding function if true
-					// always clear /\:
-					let cleanContent = content.replace(/\/|\\/g, "");
+					// always clear /\ and : from the filename
+					let cleanContent = content.replace(/\/|:/g, '_');
 
 					if (this.settings.ignoreFrontmatter) {
 						cleanContent = removeFrontmatter(cleanContent);
@@ -180,14 +180,14 @@ export default class MyPlugin extends Plugin {
 						cleanContent = cleanContent.slice(0, -1);
 					}
 
-					
+
 					const fileName = cleanContent;
 
 					const newPath = `${file.parent!.path}/${fileName}.md`;
 					try {
 						await this.app.fileManager.renameFile(file, newPath);
 					} catch (error) {
-						console.error("FILE NAMING ERROR:", error);
+						console.error(`Attempted to name note \n ${fileName}.md \n\n ..but encountered error: \n${error}`);
 						new Notice(
 							"Error renaming file, check console for details."
 						);
