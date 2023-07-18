@@ -9,6 +9,9 @@ import {
 	Setting,
 } from "obsidian";
 
+const removeMd = require('remove-markdown');
+
+
 // Remember to rename these classes and interfaces!
 
 interface MyPluginSettings {
@@ -38,33 +41,23 @@ export default class MyPlugin extends Plugin {
 				}
 
 				this.app.vault.read(file).then( async (content) => {
-					// remove frontmatter
-					const parts = content.split("---")
-					let contentClean = parts.join(' ')
-					if (parts.length > 2) {
-						contentClean = parts.slice(2).join(' ')
-					}
 
-					// get the content of the file, split by words, remove urls and words containting {, }, [, ], (, ) and #
-					// get so many words that 100 chars are not exceeded
-					const words = contentClean
-						.split(/[\s,]+/)
-						.filter(
-							(word) =>
-						// 		!word.includes("{") &&
-						// 		!word.includes("}") &&
-								// !word.includes("(") &&
-								// !word.includes(")") &&
-						// 		!word.includes("#") &&
-								!word.includes("http") &&
-								!word.includes("---") &&
-								// !word.includes(":") &&
-								// !word.includes(">") &&
-								// !word.includes("<") &&
-								word[0] != '#' &&
-								!word.includes("www")
-						)
-						.slice(0, 100)
+					function removeFrontmatter(markdown) {
+						const frontmatterStart = markdown.indexOf('---');
+						if (frontmatterStart !== -1) {
+						  const frontmatterEnd = markdown.indexOf('---', frontmatterStart + 3);
+						  if (frontmatterEnd !== -1) {
+							return markdown.slice(frontmatterEnd + 3).trimStart();
+						  }
+						}
+						return markdown;
+					  }
+					
+					const words = removeMd(removeFrontmatter(content))
+
+					console.log('WORDS', words);
+
+					console.log('FIRST LINE', words.split(/\r?\n/)[0]);
 						
 					let fileName = '';
 					// add words to filename until 100 chars are exceeded
