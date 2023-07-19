@@ -14,7 +14,7 @@ At the time of writing, this plugin is not yet available in the Community Plugin
 
 The Obsidian Title Extractor exposes the command `Extract Title and Filename From Note Content`. Running this command will do exactly that; it will read the beginning of your currently open note and set the title/filename accordingly.
 
-You can access this command via `Cmd+P` or `Ctrl+P`. I heavily recommend setting an hotkey for convenience - personally, I use `Ctrl+Shift+S` ([learn more about hotkeys and commands](https://help.obsidian.md/Plugins/Command+palette)).
+You can access this command via `Cmd+P` or `Ctrl+P`. I heavily recommend setting an hotkey for convenience. Personally, I use `Ctrl+Shift+S` ([learn more about hotkeys and commands](https://help.obsidian.md/Plugins/Command+palette)).
 
 ## Settings
 
