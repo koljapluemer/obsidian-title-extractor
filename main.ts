@@ -1,19 +1,8 @@
-import {
-	App,
-	Editor,
-	MarkdownView,
-	Modal,
-	Notice,
-	Plugin,
-	PluginSettingTab,
-	Setting,
-} from "obsidian";
+import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 const removeMd = require("remove-markdown");
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
+interface TitleExtractorSettings {
 	onlyFirstLine: boolean;
 	maxNrOfWords: number;
 	ignoreFrontmatter: boolean;
@@ -24,7 +13,7 @@ interface MyPluginSettings {
 	stripNonAlphaNumChars: boolean;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: TitleExtractorSettings = {
 	maxNrOfWords: 10,
 	onlyFirstLine: true,
 	ignoreFrontmatter: true,
@@ -35,8 +24,8 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 	stripNonAlphaNumChars: false,
 };
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class TitleExtractor extends Plugin {
+	settings: TitleExtractorSettings;
 
 	async onload() {
 		await this.loadSettings();
@@ -82,7 +71,7 @@ export default class MyPlugin extends Plugin {
 					}
 
 					function replacePeriods(markdown: string) {
-						return markdown.replace('.', '_');
+						return markdown.replace(".", "_");
 					}
 
 					function replaceSpaces(markdown: string) {
@@ -101,11 +90,10 @@ export default class MyPlugin extends Plugin {
 
 					// go through each settings and call the corresponding function if true
 					// always clear /\ and : from the filename
-					let cleanContent = content.replace(/\/|:/g, '_');
+					let cleanContent = content.replace(/\/|:/g, "_");
 
 					if (this.settings.ignoreFrontmatter) {
 						cleanContent = removeFrontmatter(cleanContent);
-					
 					}
 					if (this.settings.onlyFirstLine) {
 						cleanContent = returnFirstLine(cleanContent);
@@ -113,23 +101,18 @@ export default class MyPlugin extends Plugin {
 
 					if (this.settings.stripMarkdown) {
 						cleanContent = removeMd(cleanContent);
-						
 					}
 					if (this.settings.replacePeriods) {
 						cleanContent = replacePeriods(cleanContent);
-						
 					}
 					if (this.settings.replaceSpaces) {
 						cleanContent = replaceSpaces(cleanContent);
-						
 					}
 					if (this.settings.stripSpecialChars) {
 						cleanContent = stripSpecialChars(cleanContent);
-						
 					}
 					if (this.settings.stripNonAlphaNumChars) {
 						cleanContent = stripNonAlphaNumChars(cleanContent);
-					
 					}
 
 					function capStringWithCharacters(
@@ -165,7 +148,6 @@ export default class MyPlugin extends Plugin {
 						}
 					}
 
-
 					cleanContent = capStringWithCharacters(
 						cleanContent,
 						this.settings.maxNrOfWords
@@ -179,14 +161,15 @@ export default class MyPlugin extends Plugin {
 						cleanContent = cleanContent.slice(0, -1);
 					}
 
-
 					const fileName = cleanContent;
 
 					const newPath = `${file.parent!.path}/${fileName}.md`;
 					try {
 						await this.app.fileManager.renameFile(file, newPath);
 					} catch (error) {
-						console.error(`Attempted to name note \n ${fileName}.md \n\n ..but encountered error: \n${error}`);
+						console.error(
+							`Attempted to name note \n ${fileName}.md \n\n ..but encountered error: \n${error}`
+						);
 						new Notice(
 							"Error renaming file, check console for details."
 						);
@@ -196,7 +179,7 @@ export default class MyPlugin extends Plugin {
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new TitleExtractorSettingTab(this.app, this));
 	}
 
 	onunload() {}
@@ -214,10 +197,10 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class TitleExtractorSettingTab extends PluginSettingTab {
+	plugin: TitleExtractor;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: TitleExtractor) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -287,7 +270,6 @@ class SampleSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				})
 		);
-
 
 		// bool: replace spaces
 		new Setting(containerEl)
