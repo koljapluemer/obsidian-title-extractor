@@ -1,0 +1,1 @@
+* when removing md, also remove `[[]]` (obsidian links)

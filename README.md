@@ -4,6 +4,18 @@ Tired of pasting your heading into your note's title? Tired of dealing with `Unt
 
 This Obisidan plugin provides you with a command to automatically extract the beginning of your note and make it the file title.
 
+## Installation
+
+In the future, you will be able to install this plugin like any other [Community Plugin](https://forum.obsidian.md/t/plugins-mini-faq/7737), by searching for `Title Extractor` in the Community Plugin Tab.
+
+At the time of writing, this plugin is not yet available in the Community Plugin Tab. You have to install it [manually](https://forum.obsidian.md/t/plugins-mini-faq/7737).
+
+## Usage
+
+The Obsidian Title Extractor exposes the command `Extract Title and Filename From Note Content`. Running this command will do exactly that; it will read the beginning of your currently open note and set the title/filename accordingly.
+
+You can access this command via `Cmd+P` or `Ctrl+P`. I heavily recommend setting an hotkey for convenience - personally, I use `Ctrl+Shift+S` ([learn more about hotkeys and commands](https://help.obsidian.md/Plugins/Command+palette)).
+
 ## Settings
 
 There are a bunch of settings which allow you to fine-tune how note titles are generated. If you are not sure what these are about, you can probably keep the default settings.
