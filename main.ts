@@ -50,11 +50,7 @@ export default class TitleExtractor extends Plugin {
 				}
 
 				this.app.vault.cachedRead(file).then(async (content) => {
-					// function returnFirstLine(markdown: string) {
-					// 	const lines = markdown.trim().split("\n");
-					// 	return lines[0];
-					// }
-
+					// HELPER FUNCTIONS
 					function removeFrontmatter(markdown: string) {
 						const lines = markdown.trim().split("\n");
 						if (lines[0] === "---") {
@@ -95,6 +91,7 @@ export default class TitleExtractor extends Plugin {
 						return markdown.replace(/[^a-zA-Z0-9_\-?]/g, "");
 					}
 
+					// MAIN FUNCTIONIONALITY
 					// go through each settings and call the corresponding function if true
 					// always clear /\ and : from the filename
 					let cleanContent = content.replace(/\/|:/g, "_");
