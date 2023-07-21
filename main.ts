@@ -1,4 +1,11 @@
-import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
+import {
+	App,
+	Notice,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+	MarkdownView,
+} from "obsidian";
 
 const removeMd = require("remove-markdown");
 
@@ -42,11 +49,11 @@ export default class TitleExtractor extends Plugin {
 					return;
 				}
 
-				this.app.vault.read(file).then(async (content) => {
-					function returnFirstLine(markdown: string) {
-						const lines = markdown.trim().split("\n");
-						return lines[0];
-					}
+				this.app.vault.cachedRead(file).then(async (content) => {
+					// function returnFirstLine(markdown: string) {
+					// 	const lines = markdown.trim().split("\n");
+					// 	return lines[0];
+					// }
 
 					function removeFrontmatter(markdown: string) {
 						const lines = markdown.trim().split("\n");
@@ -96,7 +103,12 @@ export default class TitleExtractor extends Plugin {
 						cleanContent = removeFrontmatter(cleanContent);
 					}
 					if (this.settings.onlyFirstLine) {
-						cleanContent = returnFirstLine(cleanContent);
+						// use getLine(0) from Editor object
+						cleanContent =
+							this.app.workspace
+								.getActiveViewOfType(MarkdownView)!
+								.editor.getLine(0) || "";
+						console.log(cleanContent);
 					}
 
 					if (this.settings.stripMarkdown) {
@@ -210,8 +222,7 @@ class TitleExtractorSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Title Extractor Settings" });
-		containerEl.createEl("h3", { text: "Style" });
+		new Setting(containerEl).setHeading().setName("Style");
 
 		new Setting(containerEl)
 			.setName("Maximum length of the title")
@@ -259,7 +270,7 @@ class TitleExtractorSettingTab extends PluginSettingTab {
 				})
 		);
 
-		containerEl.createEl("h3", { text: "Compability" });
+		new Setting(containerEl).setHeading().setName("Compatibility");
 
 		// bool: strip periods
 		new Setting(containerEl).setName("Strip periods").addToggle((toggle) =>
