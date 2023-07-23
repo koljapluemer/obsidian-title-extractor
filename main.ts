@@ -91,6 +91,20 @@ export default class TitleExtractor extends Plugin {
 						return markdown.replace(/[^a-zA-Z0-9_\-?]/g, "");
 					}
 
+					function getFirstLine(markdown: string) {
+						// cannot use getLine() API, because it returns '---' when front matter exist
+						const lines = markdown.trim().split("\n");
+						if (lines[0] === "---") {
+							let frontmatterEndIndex = lines.findIndex(
+								(line, index) => index > 0 && line === "---"
+							);
+							if (frontmatterEndIndex !== -1) {
+								return lines[frontmatterEndIndex + 1];
+							}
+						}
+						return lines[0];
+					}
+
 					// MAIN FUNCTIONIONALITY
 					// go through each settings and call the corresponding function if true
 					// always clear /\ and : from the filename
@@ -100,12 +114,7 @@ export default class TitleExtractor extends Plugin {
 						cleanContent = removeFrontmatter(cleanContent);
 					}
 					if (this.settings.onlyFirstLine) {
-						// use getLine(0) from Editor object
-						cleanContent =
-							this.app.workspace
-								.getActiveViewOfType(MarkdownView)!
-								.editor.getLine(0) || "";
-						console.log(cleanContent);
+						cleanContent = getFirstLine(cleanContent);
 					}
 
 					if (this.settings.stripMarkdown) {
